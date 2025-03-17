@@ -36,17 +36,6 @@ public class TodoServiceImpl implements ITodoService {
     }
 
     @Override
-    public Todo deleteTodoById(Long id) {
-        Optional<Todo> optional = todoRepository.findById(id);
-        if (optional.isPresent()) {
-            Todo todo = optional.get();
-            todoRepository.delete(todo);
-            return todo;
-        }
-        return null;
-    }
-
-    @Override
     public Todo addNewTodo(Todo newTodo) {
         Todo response = new Todo();
         BeanUtils.copyProperties(newTodo,response);
@@ -58,6 +47,18 @@ public class TodoServiceImpl implements ITodoService {
         return response;
     }
 
+    @Override
+    public Todo deleteTodoById(Long id) {
+        Optional<Todo> optional = todoRepository.findById(id);
+        if (optional.isPresent()) {
+            Todo todo = optional.get();
+            todoRepository.delete(todo);
+            return todo;
+        }
+        return null;
+    }
+
+
 
     @Override
     public Todo changeTodo(Long id,Todo changeTodo) {
@@ -68,6 +69,24 @@ public class TodoServiceImpl implements ITodoService {
         Todo todo = optional.get();
         todo.setDescription(changeTodo.getDescription());
         todo.setStatus(changeTodo.getStatus());
+        if (changeTodo.getTask() != null && !changeTodo.getTask().isEmpty()) {
+            List<Tasks> existingTasks = todo.getTask(); // Mevcut task listesi
+            List<Tasks> newTasks = changeTodo.getTask(); // Güncellenmek istenen task listesi
+
+            for (Tasks newTask : newTasks) {
+                for (Tasks existingTask : existingTasks) {
+                    if (existingTask.getId().equals(newTask.getId())) { // Aynı ID'ye sahip task varsa güncelle
+                        existingTask.setDescription(newTask.getDescription());
+                        existingTask.setStatus(newTask.getStatus());
+
+                        break;
+                    }
+                }
+
+            }
+        }
+
+
         todoRepository.save(todo);
 
         return todo;
